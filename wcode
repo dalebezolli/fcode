@@ -1,0 +1,20 @@
+#!/bin/bash
+
+project_paths=""
+for path in $WCODE_PATHS; do
+	new_paths=$(ls $path | tr '\n' ';' | sed 's|;$||' | sed -E "s|([^;]*)|\1 ($path\1)|g")
+	if [[ -n $project_paths ]]; then
+		project_paths="$project_paths;"
+	fi
+
+	project_paths="$project_paths$new_paths"
+done
+
+project=$(echo $project_paths | sed 's/;/\n/g' | fzf --header="What project are you working on today?" --preview "echo {} | sed -E 's|.*\((.*)\)$|\1|' | xargs -r ls | sed 's/^/> /'" | grep -oE '\(.+\)' | tr -d '()')
+
+if [ -z $project ]; then
+	echo No project selected
+	exit 0
+fi
+
+cd $project
