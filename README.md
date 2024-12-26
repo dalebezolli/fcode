@@ -5,6 +5,8 @@ wcode (which code) provides a simple way to find and navigate to the correct pro
 
 As the tool is primarily indended for personal use, I haven't made it simple to install or use, **yet...**
 
+![wcode Showcase](./wcode_showcase.png)
+
 ## 🌱 How to install
 **Prerequesites**
 You must have [fzf](https://github.com/junegunn/fzf) installed.
