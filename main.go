@@ -18,6 +18,7 @@ func main() {
 	directories := gatherProjects(projectRoots)
 	if len(directories) == 0 {
 		fmt.Println("There don't exist any projects in the following roots: ", projectRoots)
+		return
 	}
 
 	selection := display(directories)
