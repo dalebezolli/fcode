@@ -8,9 +8,6 @@ As the tool is primarily indended for personal use, I haven't made it simple to 
 ![wcode Showcase](./wcode_showcase.png)
 
 ## 🌱 How to install
-**Prerequesites**
-You must have [fzf](https://github.com/junegunn/fzf) installed.
-
 1. Clone the repo.
 2. Set variable WCODE_PATHS with all the paths (space separated) the tool will look for projects
 3. Profit?!?
