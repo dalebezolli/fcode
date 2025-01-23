@@ -161,28 +161,43 @@ func NewInput() *Input {
 	return &Input{ oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
 }
 
-func (i *Input) Read() (string, []byte) {
-	os.Stdin.Read(i.readBuffer)
+func (in *Input) Read() (string, []byte) {
+	os.Stdin.Read(in.readBuffer)
 
-	switch i.readBuffer[0] {
+	switch in.readBuffer[0] {
 	case '\x7F':
-		if len(i.value) == 0 {
+		if len(in.value) == 0 {
 			break
 		}
 
-		i.value = i.value[0 : len(i.value)-1]
+		in.value = in.value[0 : len(in.value)-1]
 		break
 	case '\x03', '\x18':
-		i.Close()
+		in.Close()
 		os.Exit(EXIT_TERMINATED)
 		break
 	case '\x1B':
+		if in.readBuffer[1] == '\x7F' {
+			foundSpace := false
+			foundWord := false
+			i := len(in.value) - 1
+			for i >= 0 && !foundSpace {
+				if foundWord && in.value[i] == '\x20' {
+					foundSpace = true
+				} else {
+					foundWord = true
+					i--
+				}
+			}
+
+			in.value = in.value[0 : i + 1]
+		}
 		break
 	default:
-		i.value = append(i.value, i.readBuffer[0])
+		in.value = append(in.value, in.readBuffer[0])
 	}
 
-	return i.GetValue(), i.readBuffer
+	return in.GetValue(), in.readBuffer
 }
 
 func (i *Input) GetValue() string {
