@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"os"
@@ -89,9 +88,9 @@ func display(directories []string) string {
 
 	display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
 	for {
-		input, rune := input.Read()
+		input, bytes := input.Read()
 		display.DisplayAt(input+strings.Repeat(" ", 80-len(input)), 2, display.Height)
-		display.DisplayAt(strconv.Itoa(int(rune)), 80, display.Height)
+		display.DisplayAt(fmt.Sprintf("%v", bytes), 80, display.Height)
 	}
 
 	return "string"
@@ -150,22 +149,21 @@ func (d *Display) DisplayAt(data string, x, y int) {
 }
 
 type Input struct {
-	reader     *bufio.Reader
 	oldFdState *term.State
-	value      []rune
+	readBuffer []byte
+	value      []byte
 }
 
 func NewInput() *Input {
 	oldState, _ := term.MakeRaw(int(os.Stdin.Fd()))
-	reader := bufio.NewReader(os.Stdin)
 
-	return &Input{reader: reader, oldFdState: oldState, value: make([]rune, 0, 80)}
+	return &Input{ oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
 }
 
-func (i *Input) Read() (string, rune) {
-	rune, _, _ := i.reader.ReadRune()
+func (i *Input) Read() (string, []byte) {
+	os.Stdin.Read(i.readBuffer)
 
-	switch rune {
+	switch i.readBuffer[0] {
 	case '\x7F':
 		if len(i.value) == 0 {
 			break
@@ -174,10 +172,10 @@ func (i *Input) Read() (string, rune) {
 		i.value = i.value[0 : len(i.value)-1]
 		break
 	default:
-		i.value = append(i.value, rune)
+		i.value = append(i.value, i.readBuffer...)
 	}
 
-	return i.GetValue(), rune
+	return i.GetValue(), i.readBuffer
 }
 
 func (i *Input) GetValue() string {
