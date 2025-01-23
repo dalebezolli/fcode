@@ -19,6 +19,7 @@ const (
 	EXIT_OK          = 0
 	EXIT_NO_PROJECTS = 1
 	EXIT_BAD_PATH    = 2
+	EXIT_TERMINATED  = 9
 )
 
 func main() {
@@ -170,6 +171,10 @@ func (i *Input) Read() (string, []byte) {
 		}
 
 		i.value = i.value[0 : len(i.value)-1]
+		break
+	case '\x03', '\x18':
+		i.Close()
+		os.Exit(EXIT_TERMINATED)
 		break
 	default:
 		i.value = append(i.value, i.readBuffer...)
