@@ -166,6 +166,8 @@ func NewInput() *Input {
 }
 
 func (in *Input) Read() (string, []byte) {
+	in.readBuffer[1] = 0
+	in.readBuffer[2] = 0
 	os.Stdin.Read(in.readBuffer)
 
 	switch in.readBuffer[0] {
