@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -68,24 +71,78 @@ func gatherProjects(roots []string) ([]string, error) {
 }
 
 func display(directories []string) string {
+	display := NewDisplay()
+	display.Clear()
+
 	for i, dir := range directories {
 		splitName := strings.Split(dir, "/")
 		cleanedName := splitName[len(splitName)-1]
 
-		fmt.Printf("%d: %v\n", i, cleanedName)
+		display.DisplayAt(cleanedName, 2, 2+i)
 	}
 
-	var selection int
-	fmt.Println("What project are you working on today?")
+	display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
 	for {
-		fmt.Scanf("%d", &selection)
-
-		if selection >= len(directories) {
-			fmt.Printf("Specify a value from 0 to %d\n", len(directories))
-		} else {
-			return directories[selection]
-		}
 	}
+
+	return "string"
+}
+
+type Display struct {
+	tty    *os.File
+	Width  int
+	Height int
+}
+
+func NewDisplay() *Display {
+	f, err := os.OpenFile("/dev/tty", os.O_RDWR|os.O_APPEND|os.O_TRUNC, 0666)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+
+	output := &bytes.Buffer{}
+
+	cmd := exec.Command("tput", "lines")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = output
+	cmd.Run()
+	height, _ := strconv.Atoi(strings.Trim(output.String(), " \n\t"))
+	output.Reset()
+
+	if height == 0 {
+		height = 24
+	}
+
+	cmd = exec.Command("tput", "cols")
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = output
+	cmd.Run()
+	width, _ := strconv.Atoi(strings.Trim(output.String(), " \n\t"))
+	output.Reset()
+
+	if width == 0 {
+		width = 80
+	}
+
+	return &Display{
+		tty:    f,
+		Width:  0,
+		Height: height,
+	}
+}
+
+func (d *Display) Clear() {
+	d.tty.WriteString("\x1b[H\x1b[J")
+}
+
+func (d *Display) DisplayAt(data string, x, y int) {
+	command := fmt.Sprintf("\x1b[%d;%dH%v", y, x, data)
+	d.tty.WriteString(command)
+}
+		}
+
+	}
+
 }
 
 func setupFiles() error {
