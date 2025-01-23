@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	term "golang.org/x/term"
 )
 
 const DIR_CONFIG = "$HOME/.config/wcode"
@@ -71,6 +74,8 @@ func gatherProjects(roots []string) ([]string, error) {
 }
 
 func display(directories []string) string {
+	input := NewInput()
+
 	display := NewDisplay()
 	display.Clear()
 
@@ -83,6 +88,9 @@ func display(directories []string) string {
 
 	display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
 	for {
+		input, rune := input.Read()
+		display.DisplayAt(input+strings.Repeat(" ", 80-len(input)), 2, display.Height)
+		display.DisplayAt(strconv.Itoa(int(rune)), 80, display.Height)
 	}
 
 	return "string"
@@ -139,10 +147,44 @@ func (d *Display) DisplayAt(data string, x, y int) {
 	command := fmt.Sprintf("\x1b[%d;%dH%v", y, x, data)
 	d.tty.WriteString(command)
 }
+
+type Input struct {
+	reader     *bufio.Reader
+	oldFdState *term.State
+	value      []rune
+}
+
+func NewInput() *Input {
+	oldState, _ := term.MakeRaw(int(os.Stdin.Fd()))
+	reader := bufio.NewReader(os.Stdin)
+
+	return &Input{reader: reader, oldFdState: oldState, value: make([]rune, 0, 80)}
+}
+
+func (i *Input) Read() (string, rune) {
+	rune, _, _ := i.reader.ReadRune()
+
+	switch rune {
+	case '\x7F':
+		if len(i.value) == 0 {
+			break
 		}
 
+		i.value = i.value[0 : len(i.value)-1]
+		break
+	default:
+		i.value = append(i.value, rune)
 	}
 
+	return i.GetValue(), rune
+}
+
+func (i *Input) GetValue() string {
+	return string(i.value)
+}
+
+func (i *Input) Close() {
+	term.Restore(int(os.Stdin.Fd()), i.oldFdState)
 }
 
 func setupFiles() error {
