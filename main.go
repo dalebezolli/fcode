@@ -179,7 +179,7 @@ func (i *Input) Read() (string, []byte) {
 	case '\x1B':
 		break
 	default:
-		i.value = append(i.value, i.readBuffer...)
+		i.value = append(i.value, i.readBuffer[0])
 	}
 
 	return i.GetValue(), i.readBuffer
