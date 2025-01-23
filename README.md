@@ -18,7 +18,7 @@ You must have [fzf](https://github.com/junegunn/fzf) installed.
 ## 🌷 How to use
 To use you just need to run it using:
 ```sh
-. wcode
+go run main.go; cd `cat $HOME/.config/wcode/selection`
 ```
 
 The DOT `.` is important. We need it to change directory once we select the project. It is a shorthand for source, which runs the code in the current shell instance.
