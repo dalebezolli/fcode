@@ -40,7 +40,8 @@ func gatherProjects(roots []string) []string {
 				continue
 			}
 
-			directories = append(directories, root+string(os.PathSeparator)+v.Name())
+			projectPath := strings.ReplaceAll(root+string(os.PathSeparator)+v.Name(), "//", "/")
+			directories = append(directories, projectPath)
 		}
 	}
 
@@ -91,5 +92,5 @@ func saveSelectionToDisk(selection string) {
 
 func gatherProjectPaths() []string {
 	pathsString := os.ExpandEnv(ENV_PROJECT_PATHS)
-	return strings.Split(pathsString, " ");
+	return strings.Split(pathsString, " ")
 }
