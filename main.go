@@ -75,6 +75,7 @@ func gatherProjects(roots []string) ([]string, error) {
 
 func display(directories []string) string {
 	input := NewInput()
+	defer input.Close()
 
 	display := NewDisplay()
 	display.Clear()
