@@ -176,6 +176,8 @@ func (i *Input) Read() (string, []byte) {
 		i.Close()
 		os.Exit(EXIT_TERMINATED)
 		break
+	case '\x1B':
+		break
 	default:
 		i.value = append(i.value, i.readBuffer...)
 	}
