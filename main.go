@@ -80,17 +80,21 @@ func display(directories []string) string {
 	display := NewDisplay()
 	display.Clear()
 
-	for i, dir := range directories {
-		splitName := strings.Split(dir, "/")
-		cleanedName := splitName[len(splitName)-1]
-
-		display.DisplayAt(cleanedName, 2, 2+i)
-	}
-
-	display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
 	for {
+		for i, dir := range directories {
+			splitName := strings.Split(dir, "/")
+			cleanedName := splitName[len(splitName)-1]
+
+			display.DisplayAt(cleanedName, 2, 2+i)
+		}
+
+		display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
+
 		input, bytes := input.Read()
-		display.DisplayAt(input+strings.Repeat(" ", 80-len(input)), 2, display.Height)
+
+		display.Clear()
+
+		display.DisplayAt(input, 2, display.Height)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 80, display.Height)
 	}
 
