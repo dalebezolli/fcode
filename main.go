@@ -10,30 +10,48 @@ const DIR_CONFIG = "$HOME/.config/wcode"
 const FILENAME_SELECTION = "selection"
 const ENV_PROJECT_PATHS = "$WCODE_PATHS"
 
+const (
+	EXIT_OK          = 0
+	EXIT_NO_PROJECTS = 1
+	EXIT_BAD_PATH    = 2
+)
+
 func main() {
-	setupFiles()
+	err := setupFiles()
+	if err != nil {
+		fmt.Println("An unexpected error occured while initializing the config directory:", err.Error())
+		os.Exit(EXIT_BAD_PATH)
+	}
 
 	projectRoots := gatherProjectPaths()
 
-	directories := gatherProjects(projectRoots)
+	directories, err := gatherProjects(projectRoots)
+	if err != nil {
+		fmt.Printf("There was a problem while collecting the projects: %v\n", err.Error())
+		os.Exit(EXIT_BAD_PATH)
+	}
+
 	if len(directories) == 0 {
-		fmt.Println("There don't exist any projects in the following roots: ", projectRoots)
-		return
+		fmt.Println("There don't exist any projects in the directories: ", projectRoots)
+		os.Exit(EXIT_NO_PROJECTS)
 	}
 
 	selection := display(directories)
 	fmt.Printf("Opening: %v\n", selection)
 
 	saveSelectionToDisk(selection)
+	if err != nil {
+		fmt.Println("An unexpected error occured while saving the selection:", err.Error())
+		os.Exit(EXIT_BAD_PATH)
+	}
 }
 
-func gatherProjects(roots []string) []string {
+func gatherProjects(roots []string) ([]string, error) {
 	directories := []string{}
 	for _, root := range roots {
 		entries, err := os.ReadDir(root)
 		if err != nil {
-			fmt.Printf("There was a problem while reading %q: %v\n", root, err.Error())
-			return []string{}
+			return nil, err
 		}
 
 		for _, v := range entries {
@@ -46,7 +64,7 @@ func gatherProjects(roots []string) []string {
 		}
 	}
 
-	return directories
+	return directories, nil
 }
 
 func display(directories []string) string {
@@ -70,25 +88,19 @@ func display(directories []string) string {
 	}
 }
 
-func setupFiles() {
+func setupFiles() error {
 	baseDir := os.ExpandEnv(DIR_CONFIG)
-
-	err := os.MkdirAll(baseDir, 0751)
-	if err != nil {
-		fmt.Println("An unexpected error occured while initializing the config directory:", err.Error())
-	}
+	return os.MkdirAll(baseDir, 0751)
 }
 
-func saveSelectionToDisk(selection string) {
+func saveSelectionToDisk(selection string) error {
 	baseDir := os.ExpandEnv(DIR_CONFIG)
-
 	file, err := os.Create(baseDir + string(os.PathSeparator) + FILENAME_SELECTION)
-	if err != nil {
-		fmt.Println("An unexpected error occured while saving the selection:", err.Error())
-		return
+	if err == nil {
+		file.Write([]byte(selection))
 	}
 
-	file.Write([]byte(selection))
+	return err
 }
 
 func gatherProjectPaths() []string {
