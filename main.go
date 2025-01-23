@@ -8,11 +8,12 @@ import (
 
 const DIR_CONFIG = "$HOME/.config/wcode"
 const FILENAME_SELECTION = "selection"
+const ENV_PROJECT_PATHS = "$WCODE_PATHS"
 
 func main() {
 	setupFiles()
 
-	projectRoots := []string{"/home/void/code"}
+	projectRoots := gatherProjectPaths()
 
 	directories := gatherProjects(projectRoots)
 	if len(directories) == 0 {
@@ -86,4 +87,9 @@ func saveSelectionToDisk(selection string) {
 	}
 
 	file.Write([]byte(selection))
+}
+
+func gatherProjectPaths() []string {
+	pathsString := os.ExpandEnv(ENV_PROJECT_PATHS)
+	return strings.Split(pathsString, " ");
 }
