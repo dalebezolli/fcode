@@ -96,6 +96,7 @@ func display(directories []string) string {
 			display.DisplayAt(cleanedName, 2, 2+i)
 		}
 
+		display.MoveCursorAt(3+len(input.GetValue()), display.Height-1)
 		input, bytes, finished := input.Read()
 
 		display.Clear()
@@ -104,7 +105,6 @@ func display(directories []string) string {
 		display.AddModifier("\x1b[1m")
 		display.DisplayAt(input, 3, display.Height-1)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 85, display.Height-1)
-
 		if finished {
 			break
 		}
@@ -166,10 +166,15 @@ func (d *Display) AddModifier(modifier string) {
 	d.modifier = modifier
 }
 
+func (d *Display) MoveCursorAt(x, y int) {
+	d.tty.WriteString(fmt.Sprintf("\x1b[%d;%dH", y, x))
+}
+
 func (d *Display) DisplayAt(data string, x, y int) {
-	command := fmt.Sprintf("\x1b[%d;%dH%v", y, x, data)
+	d.MoveCursorAt(x, y)
+	command := data
 	if len(d.modifier) != 0 {
-		command = d.modifier + command + "\x1b[0m"
+		command = d.modifier + data + "\x1b[0m"
 		d.modifier = ""
 	}
 
