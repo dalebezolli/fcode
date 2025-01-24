@@ -106,6 +106,7 @@ func display(directories []string) string {
 		display.DisplayAt("│                                                                                 │", 1, display.Height-2)
 		display.DisplayAt("│                                                                                 │", 1, display.Height-1)
 		display.DisplayAt("└─────────────────────────────────────────────────────────────────────────────────┘", 1, display.Height)
+		display.AddModifier("\x1b[1m")
 		display.DisplayAt(input, 3, display.Height-1)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 85, display.Height-1)
 
@@ -121,6 +122,8 @@ type Display struct {
 	tty    *os.File
 	Width  int
 	Height int
+
+	modifier string
 }
 
 func NewDisplay() *Display {
@@ -164,8 +167,17 @@ func (d *Display) Clear() {
 	d.tty.WriteString("\x1b[H\x1b[J")
 }
 
+func (d *Display) AddModifier(modifier string) {
+	d.modifier = modifier
+}
+
 func (d *Display) DisplayAt(data string, x, y int) {
 	command := fmt.Sprintf("\x1b[%d;%dH%v", y, x, data)
+	if len(d.modifier) != 0 {
+		command = d.modifier + command + "\x1b[0m"
+		d.modifier = ""
+	}
+
 	d.tty.WriteString(command)
 }
 
