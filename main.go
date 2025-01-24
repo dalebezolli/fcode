@@ -81,7 +81,12 @@ func display(directories []string) string {
 	display.Clear()
 
 	for {
-		for i, dir := range directories {
+		queriedDirectories := directories
+		if len(input.GetValue()) != 0 {
+			queriedDirectories = getProjectMatches(directories, input.GetValue(), false)
+		}
+
+		for i, dir := range queriedDirectories {
 			splitName := strings.Split(dir, "/")
 			cleanedName := splitName[len(splitName)-1]
 
@@ -166,7 +171,7 @@ type Input struct {
 func NewInput() *Input {
 	oldState, _ := term.MakeRaw(int(os.Stdin.Fd()))
 
-	return &Input{ oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
+	return &Input{oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
 }
 
 func (in *Input) Read() (string, []byte, bool) {
@@ -204,7 +209,7 @@ func (in *Input) Read() (string, []byte, bool) {
 				}
 			}
 
-			in.value = in.value[0 : i + 1]
+			in.value = in.value[0 : i+1]
 		}
 		break
 	default:
@@ -240,4 +245,37 @@ func saveSelectionToDisk(selection string) error {
 func gatherProjectPaths() []string {
 	pathsString := os.ExpandEnv(ENV_PROJECT_PATHS)
 	return strings.Split(pathsString, " ")
+}
+
+func getProjectMatches(dirs []string, needle string, matchPath bool) []string {
+	res := make([]string, 0, len(dirs))
+
+	for _, hay := range dirs {
+		if !isMatch(strings.ToLower(hay), strings.ToLower(needle), matchPath) {
+			continue
+		}
+
+		res = append(res, hay)
+	}
+
+	return res
+}
+
+func isMatch(haystack string, needle string, matchPath bool) bool {
+	for i := len(haystack) - 1; i >= len(needle)-1; i-- {
+		if !matchPath && haystack[i] == '/' {
+			return false
+		}
+
+		j := 0
+		for j < len(needle) && haystack[i-j] == needle[len(needle)-j-1] {
+			j++
+		}
+
+		if j == len(needle) {
+			return true
+		}
+	}
+
+	return false
 }
