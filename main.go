@@ -80,10 +80,7 @@ func display(directories []string) string {
 	display := NewDisplay()
 	display.Clear()
 
-	display.DisplayAt("┌─ What project are you working on today? ────────────────────────────────────────┐", 1, display.Height-3)
-	display.DisplayAt("│                                                                                 │", 1, display.Height-2)
-	display.DisplayAt("│                                                                                 │", 1, display.Height-1)
-	display.DisplayAt("└─────────────────────────────────────────────────────────────────────────────────┘", 1, display.Height)
+	displayInputGraphic(display)
 
 	for {
 		queriedDirectories := directories
@@ -95,6 +92,7 @@ func display(directories []string) string {
 			splitName := strings.Split(dir, "/")
 			cleanedName := splitName[len(splitName)-1]
 
+			display.AddModifier("\x1b[2m")
 			display.DisplayAt(cleanedName, 2, 2+i)
 		}
 
@@ -102,10 +100,7 @@ func display(directories []string) string {
 
 		display.Clear()
 
-		display.DisplayAt("┌─ What project are you working on today? ────────────────────────────────────────┐", 1, display.Height-3)
-		display.DisplayAt("│                                                                                 │", 1, display.Height-2)
-		display.DisplayAt("│                                                                                 │", 1, display.Height-1)
-		display.DisplayAt("└─────────────────────────────────────────────────────────────────────────────────┘", 1, display.Height)
+		displayInputGraphic(display)
 		display.AddModifier("\x1b[1m")
 		display.DisplayAt(input, 3, display.Height-1)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 85, display.Height-1)
@@ -264,6 +259,17 @@ func saveSelectionToDisk(selection string) error {
 func gatherProjectPaths() []string {
 	pathsString := os.ExpandEnv(ENV_PROJECT_PATHS)
 	return strings.Split(pathsString, " ")
+}
+
+func displayInputGraphic(display *Display) {
+	display.AddModifier("\x1b[2;36m")
+	display.DisplayAt("┌─ What project are you working on today? ────────────────────────────────────────┐", 1, display.Height-3)
+	display.AddModifier("\x1b[2;36m")
+	display.DisplayAt("│                                                                                 │", 1, display.Height-2)
+	display.AddModifier("\x1b[2;36m")
+	display.DisplayAt("│                                                                                 │", 1, display.Height-1)
+	display.AddModifier("\x1b[2;36m")
+	display.DisplayAt("└─────────────────────────────────────────────────────────────────────────────────┘", 1, display.Height)
 }
 
 func getProjectMatches(dirs []string, needle string, matchPath bool) []string {
