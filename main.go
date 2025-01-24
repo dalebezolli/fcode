@@ -90,15 +90,19 @@ func display(directories []string) string {
 
 		display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
 
-		input, bytes := input.Read()
+		input, bytes, finished := input.Read()
 
 		display.Clear()
 
 		display.DisplayAt(input, 2, display.Height)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 80, display.Height)
+
+		if finished {
+			break
+		}
 	}
 
-	return "string"
+	return input.GetValue()
 }
 
 type Display struct {
@@ -165,7 +169,8 @@ func NewInput() *Input {
 	return &Input{ oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
 }
 
-func (in *Input) Read() (string, []byte) {
+func (in *Input) Read() (string, []byte, bool) {
+	finished := false
 	in.readBuffer[1] = 0
 	in.readBuffer[2] = 0
 	os.Stdin.Read(in.readBuffer)
@@ -181,6 +186,9 @@ func (in *Input) Read() (string, []byte) {
 	case '\x03', '\x18':
 		in.Close()
 		os.Exit(EXIT_TERMINATED)
+		break
+	case '\x0D':
+		finished = true
 		break
 	case '\x1B':
 		if in.readBuffer[1] == '\x7F' {
@@ -203,7 +211,7 @@ func (in *Input) Read() (string, []byte) {
 		in.value = append(in.value, in.readBuffer[0])
 	}
 
-	return in.GetValue(), in.readBuffer
+	return in.GetValue(), in.readBuffer, finished
 }
 
 func (i *Input) GetValue() string {
