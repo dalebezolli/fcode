@@ -80,6 +80,11 @@ func display(directories []string) string {
 	display := NewDisplay()
 	display.Clear()
 
+	display.DisplayAt("┌─ What project are you working on today? ────────────────────────────────────────┐", 1, display.Height-3)
+	display.DisplayAt("│                                                                                 │", 1, display.Height-2)
+	display.DisplayAt("│                                                                                 │", 1, display.Height-1)
+	display.DisplayAt("└─────────────────────────────────────────────────────────────────────────────────┘", 1, display.Height)
+
 	for {
 		queriedDirectories := directories
 		if len(input.GetValue()) != 0 {
@@ -93,14 +98,16 @@ func display(directories []string) string {
 			display.DisplayAt(cleanedName, 2, 2+i)
 		}
 
-		display.DisplayAt("What project are you working on today? ", 2, display.Height-1)
-
 		input, bytes, finished := input.Read()
 
 		display.Clear()
 
-		display.DisplayAt(input, 2, display.Height)
-		display.DisplayAt(fmt.Sprintf("%v", bytes), 80, display.Height)
+		display.DisplayAt("┌─ What project are you working on today? ────────────────────────────────────────┐", 1, display.Height-3)
+		display.DisplayAt("│                                                                                 │", 1, display.Height-2)
+		display.DisplayAt("│                                                                                 │", 1, display.Height-1)
+		display.DisplayAt("└─────────────────────────────────────────────────────────────────────────────────┘", 1, display.Height)
+		display.DisplayAt(input, 3, display.Height-1)
+		display.DisplayAt(fmt.Sprintf("%v", bytes), 85, display.Height-1)
 
 		if finished {
 			break
