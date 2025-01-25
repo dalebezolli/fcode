@@ -15,7 +15,7 @@ As the tool is primarily indended for personal use, I haven't made it simple to 
 ## 🌷 How to use
 To use you just need to run it using:
 ```sh
-go run main.go; cd `cat $HOME/.config/wcode/selection`
+./wcode; if [ $(echo $?) -eq 0 ]; then cd $(cat ~/.config/wcode/selection); else echo "No project selected"; fi
 ```
 
 The DOT `.` is important. We need it to change directory once we select the project. It is a shorthand for source, which runs the code in the current shell instance.
