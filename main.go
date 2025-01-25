@@ -105,7 +105,7 @@ func getSelection(display *Display, input *Input, directories []string) string {
 		}
 
 		display.MoveCursorAt(3+len(input.GetValue()), display.Height-1)
-		input, bytes, finished := input.Read(&selection)
+		userInput, bytes, status := input.Read(&selection)
 
 		selection = min(max(selection, 0), len(queriedDirectories)-1)
 
@@ -113,11 +113,17 @@ func getSelection(display *Display, input *Input, directories []string) string {
 
 		displayInputGraphic(display)
 		display.AddModifier("\x1b[1m")
-		display.DisplayAt(input, 3, display.Height-1)
+		display.DisplayAt(userInput, 3, display.Height-1)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 85, display.Height-1)
 		display.DisplayAt(fmt.Sprintf("%v", selection), 100, display.Height-1)
-		if finished {
+		if status == Status_Finished {
 			break
+		}
+
+		if status == Status_Terminated {
+			display.Clear()
+			input.Close()
+			os.Exit(EXIT_TERMINATED)
 		}
 	}
 
@@ -208,8 +214,15 @@ func NewInput() *Input {
 	return &Input{oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
 }
 
-func (in *Input) Read(selection *int) (string, []byte, bool) {
-	finished := false
+type Status int
+const (
+	Status_Ok = iota
+	Status_Finished
+	Status_Terminated
+)
+
+func (in *Input) Read(selection *int) (string, []byte, Status) {
+	var status Status = Status_Ok
 	in.readBuffer[1] = 0
 	in.readBuffer[2] = 0
 	os.Stdin.Read(in.readBuffer)
@@ -229,11 +242,11 @@ func (in *Input) Read(selection *int) (string, []byte, bool) {
 		(*selection)--
 		break
 	case '\x03', '\x18':
-		in.Close()
-		os.Exit(EXIT_TERMINATED)
+		*selection = 0
+		status = Status_Terminated
 		break
 	case '\x0D':
-		finished = true
+		status = Status_Finished
 		break
 	case '\x1B':
 		if in.readBuffer[1] == '\x7F' {
@@ -267,7 +280,7 @@ func (in *Input) Read(selection *int) (string, []byte, bool) {
 		*selection = 0
 	}
 
-	return in.GetValue(), in.readBuffer, finished
+	return in.GetValue(), in.readBuffer, status
 }
 
 func (i *Input) GetValue() string {
