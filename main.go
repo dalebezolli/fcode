@@ -223,11 +223,11 @@ func (in *Input) Read(selection *int) (string, []byte, bool) {
 
 		in.value = in.value[0 : len(in.value)-1]
 		break
-	case '\x0E':
-		(*selection)++;
-		break;
-	case '\x10':
-		(*selection)--;
+	case '\x0E', '\x04':
+		(*selection)++
+		break
+	case '\x10', '\x15':
+		(*selection)--
 		break
 	case '\x03', '\x18':
 		in.Close()
@@ -251,8 +251,17 @@ func (in *Input) Read(selection *int) (string, []byte, bool) {
 			}
 
 			in.value = in.value[0 : i+1]
+			*selection = 0
 		}
-		*selection = 0
+
+		switch in.readBuffer[2] {
+		case '\x41':
+			*selection--
+			break
+		case '\x42':
+			*selection++
+			break
+		}
 		break
 	default:
 		in.value = append(in.value, in.readBuffer[0])
