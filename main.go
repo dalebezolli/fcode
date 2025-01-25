@@ -82,8 +82,9 @@ func display(directories []string) string {
 
 	displayInputGraphic(display)
 
+	selection := 0
+	queriedDirectories := directories
 	for {
-		queriedDirectories := directories
 		if len(input.GetValue()) != 0 {
 			queriedDirectories = getProjectMatches(directories, input.GetValue(), false)
 		}
@@ -93,13 +94,21 @@ func display(directories []string) string {
 			path := strings.Join(splitName[0:len(splitName)-1], "/") + "/"
 			project := splitName[len(splitName)-1]
 
-			display.AddModifier("\x1b[2m")
+			selectedMod := ""
+			if selection == i {
+				selectedMod = ";1;4"
+			}
+
+			display.AddModifier(fmt.Sprintf("\x1b[2%vm", selectedMod))
 			display.DisplayAt(path, 2, 2+i)
+			display.AddModifier(fmt.Sprintf("\x1b[%vm", selectedMod))
 			display.DisplayAt(project, len(path)+2, 2+i)
 		}
 
 		display.MoveCursorAt(3+len(input.GetValue()), display.Height-1)
-		input, bytes, finished := input.Read()
+		input, bytes, finished := input.Read(&selection)
+
+		selection = min(max(selection, 0), len(queriedDirectories)-1)
 
 		display.Clear()
 
@@ -107,12 +116,13 @@ func display(directories []string) string {
 		display.AddModifier("\x1b[1m")
 		display.DisplayAt(input, 3, display.Height-1)
 		display.DisplayAt(fmt.Sprintf("%v", bytes), 85, display.Height-1)
+		display.DisplayAt(fmt.Sprintf("%v", selection), 100, display.Height-1)
 		if finished {
 			break
 		}
 	}
 
-	return input.GetValue()
+	return queriedDirectories[selection]
 }
 
 type Display struct {
@@ -195,7 +205,7 @@ func NewInput() *Input {
 	return &Input{oldFdState: oldState, readBuffer: make([]byte, 3), value: make([]byte, 0, 80)}
 }
 
-func (in *Input) Read() (string, []byte, bool) {
+func (in *Input) Read(selection *int) (string, []byte, bool) {
 	finished := false
 	in.readBuffer[1] = 0
 	in.readBuffer[2] = 0
@@ -208,6 +218,12 @@ func (in *Input) Read() (string, []byte, bool) {
 		}
 
 		in.value = in.value[0 : len(in.value)-1]
+		break
+	case '\x0E':
+		(*selection)--;
+		break;
+	case '\x10':
+		(*selection)++;
 		break
 	case '\x03', '\x18':
 		in.Close()
@@ -232,9 +248,11 @@ func (in *Input) Read() (string, []byte, bool) {
 
 			in.value = in.value[0 : i+1]
 		}
+		*selection = 0
 		break
 	default:
 		in.value = append(in.value, in.readBuffer[0])
+		*selection = 0
 	}
 
 	return in.GetValue(), in.readBuffer, finished
