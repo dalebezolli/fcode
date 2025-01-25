@@ -54,6 +54,7 @@ func main() {
 	err = saveSelectionToDisk(selection)
 	if err != nil {
 		fmt.Println("An unexpected error occured while saving the selection:", err.Error())
+		input.Close()
 		os.Exit(EXIT_BAD_PATH)
 	}
 
