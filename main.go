@@ -42,7 +42,13 @@ func main() {
 		os.Exit(EXIT_NO_PROJECTS)
 	}
 
-	selection := display(directories)
+	input := NewInput()
+	defer input.Close()
+
+	display := NewDisplay()
+	display.Clear()
+	selection := getSelection(display, input, directories)
+	display.Clear()
 
 	saveSelectionToDisk(selection)
 	if err != nil {
@@ -72,13 +78,7 @@ func gatherProjects(roots []string) ([]string, error) {
 	return directories, nil
 }
 
-func display(directories []string) string {
-	input := NewInput()
-	defer input.Close()
-
-	display := NewDisplay()
-	display.Clear()
-
+func getSelection(display *Display, input *Input, directories []string) string {
 	displayInputGraphic(display)
 
 	selection := 0
@@ -126,7 +126,6 @@ func display(directories []string) string {
 	} else {
 		return ""
 	}
-
 }
 
 type Display struct {
