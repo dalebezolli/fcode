@@ -16,10 +16,11 @@ const FILENAME_SELECTION = "selection"
 const ENV_PROJECT_PATHS = "$WCODE_PATHS"
 
 const (
-	EXIT_OK          = 0
-	EXIT_NO_PROJECTS = 1
-	EXIT_BAD_PATH    = 2
-	EXIT_TERMINATED  = 9
+	EXIT_OK           = 0
+	EXIT_NO_PROJECTS  = 1
+	EXIT_BAD_PATH     = 2
+	EXIT_NO_SELECTION = 3
+	EXIT_TERMINATED   = 9
 )
 
 func main() {
@@ -50,10 +51,15 @@ func main() {
 	selection := getSelection(display, input, directories)
 	display.Clear()
 
-	saveSelectionToDisk(selection)
+	err = saveSelectionToDisk(selection)
 	if err != nil {
 		fmt.Println("An unexpected error occured while saving the selection:", err.Error())
 		os.Exit(EXIT_BAD_PATH)
+	}
+
+	if len(selection) == 0 {
+		input.Close()
+		os.Exit(EXIT_NO_SELECTION)
 	}
 }
 
@@ -121,9 +127,8 @@ func getSelection(display *Display, input *Input, directories []string) string {
 		}
 
 		if status == Status_Terminated {
-			display.Clear()
-			input.Close()
-			os.Exit(EXIT_TERMINATED)
+			selection = -1
+			break
 		}
 	}
 
@@ -215,6 +220,7 @@ func NewInput() *Input {
 }
 
 type Status int
+
 const (
 	Status_Ok = iota
 	Status_Finished
