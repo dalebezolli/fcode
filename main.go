@@ -90,10 +90,12 @@ func display(directories []string) string {
 
 		for i, dir := range queriedDirectories {
 			splitName := strings.Split(dir, "/")
-			cleanedName := splitName[len(splitName)-1]
+			path := strings.Join(splitName[0:len(splitName)-1], "/") + "/"
+			project := splitName[len(splitName)-1]
 
 			display.AddModifier("\x1b[2m")
-			display.DisplayAt(cleanedName, 2, 2+i)
+			display.DisplayAt(path, 2, 2+i)
+			display.DisplayAt(project, len(path)+2, 2+i)
 		}
 
 		display.MoveCursorAt(3+len(input.GetValue()), display.Height-1)
