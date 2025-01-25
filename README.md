@@ -13,12 +13,11 @@ As the tool is primarily indended for personal use, I haven't made it simple to 
 3. Profit?!?
 
 ## 🌷 How to use
-To use you just need to run it using:
+To use it after compilation run the following command and let the app simplify your life
 ```sh
-./wcode; if [ $(echo $?) -eq 0 ]; then cd $(cat ~/.config/wcode/selection); else echo "No project selected"; fi
+wcode; if [ $(echo $?) -eq 0 ]; then cd $(cat ~/.config/wcode/selection); else echo "No project selected"; fi
 ```
-
-The DOT `.` is important. We need it to change directory once we select the project. It is a shorthand for source, which runs the code in the current shell instance.
+To make your life easier, alias the above command.
 
 ## 🧑‍🌾 How to contribute
 Feel free to suggest any additions or changes by creating a pull request.
