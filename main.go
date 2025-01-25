@@ -43,7 +43,6 @@ func main() {
 	}
 
 	selection := display(directories)
-	fmt.Printf("Opening: %v\n", selection)
 
 	saveSelectionToDisk(selection)
 	if err != nil {
@@ -225,10 +224,10 @@ func (in *Input) Read(selection *int) (string, []byte, bool) {
 		in.value = in.value[0 : len(in.value)-1]
 		break
 	case '\x0E':
-		(*selection)--;
+		(*selection)++;
 		break;
 	case '\x10':
-		(*selection)++;
+		(*selection)--;
 		break
 	case '\x03', '\x18':
 		in.Close()
