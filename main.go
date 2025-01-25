@@ -122,7 +122,12 @@ func display(directories []string) string {
 		}
 	}
 
-	return queriedDirectories[selection]
+	if selection >= 0 && selection < len(queriedDirectories) {
+		return queriedDirectories[selection]
+	} else {
+		return ""
+	}
+
 }
 
 type Display struct {
