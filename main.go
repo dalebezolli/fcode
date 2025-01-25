@@ -93,6 +93,8 @@ func getSelection(display *Display, input *Input, directories []string) string {
 	for {
 		if len(input.GetValue()) != 0 {
 			queriedDirectories = getProjectMatches(directories, input.GetValue(), false)
+		} else {
+			queriedDirectories = directories
 		}
 
 		for i, dir := range queriedDirectories {
